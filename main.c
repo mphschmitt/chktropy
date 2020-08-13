@@ -4,6 +4,7 @@
 #include <math.h>
 #include <string.h>
 #include <errno.h>
+#include <float.h>
 
 #define BUF_SIZE 128
 #define ASCII_SIZE 128
@@ -18,7 +19,7 @@ enum arguments {
 static void usage(void)
 {
 	printf("Usage: chktropy [OPTIONS]\n");
-	printf("Calculate the entropy of the password given on the standard input\n");
+	printf("Calculate the entropy of the ASCII password given on the standard input\n");
 	printf("  -h  --help       display this help message\n");
 	printf("  -i  --stdin      do not print stdin while reading it\n");
 	printf("  -a  --all        display number of chars, unique chars,\n");
@@ -34,9 +35,12 @@ static double calculate_entropy(
 {
 	double entropy = 0.0;
 
+	/* 0^0 = 1, so nb_passwords will never be 0 */
 	*nb_passwords = pow((double)nb_unique_chars, (double)nb_chars);
 
-	/* 0^0 = 1, so nb_passwords will never be 0 */
+	if (isinf(*nb_passwords))
+		*nb_passwords = DBL_MAX;
+
 	entropy = log(*nb_passwords);
 
 	*nb_passwords = round(*nb_passwords);
@@ -101,8 +105,14 @@ int main(int argc, char *argv[])
 		for (int i = 0; i < ret; ++i) {
 			int c = (int)buffer[i];
 
+			if (c < 0 || c > 128) {
+				printf("Chktropy only supports 7 bits ASCII. This password cannot be handled\n");
+				exit(EXIT_FAILURE);
+			}
+
 			if (buffer[i] == '\n') {
 				buffer[i] = '\0';
+
 				nb_chars -= 1;
 				if (!(args & ARGS_I))
 					printf("%s", buffer);
