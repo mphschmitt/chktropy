@@ -50,16 +50,10 @@ static double calculate_entropy(
 	return entropy;
 }
 
-int main(int argc, char *argv[])
+static char check_arguments(int argc, char *argv[])
 {
-	char ascii[ASCII_SIZE] = {0};
-	char buffer[BUF_SIZE] = {0};
 	char args = 0;
 	int opt;
-	unsigned long int nb_unique_chars = 0;
-	unsigned long int nb_chars = 0;
-	double nb_passwords = 0.0;
-	double entropy = 0.0;
 	struct option long_options[] = {
 		{"help", no_argument, 0, 'h'},
 		{"all", no_argument, 0, 'a'},
@@ -69,7 +63,6 @@ int main(int argc, char *argv[])
 		{0, 0, 0, 0}
 	};
 
-	// Support arbitrary precision numbers
 	while ((opt = getopt_long(argc, argv, "aeihr", long_options, NULL)) != -1) {
 		switch (opt) {
 		case 'a':
@@ -112,8 +105,30 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	return args;
+}
+
+// Definir des options d'output:
+// 		- Nombre de chiffres apres la virgule pour l'entropy
+//
+// nb_passwords and entropy are long double
+//
+// Support arbitrary precision numbers with gnu gmp library
+int main(int argc, char *argv[])
+{
+	char ascii[ASCII_SIZE] = {0};
+	char buffer[BUF_SIZE] = {0};
+	char args;
+	unsigned long int nb_unique_chars = 0;
+	unsigned long int nb_chars = 0;
+	double nb_passwords = 0.0;
+	double entropy = 0.0;
+
+	args = check_arguments(argc, argv);
+
 	if (!(args & ARGS_I))
 		printf("Input:              ");
+
 	while (1) {
 		ssize_t ret = 0;
 
@@ -126,7 +141,7 @@ int main(int argc, char *argv[])
 			goto end;
 		}
 
-		nb_chars += ret;
+		nb_chars += (unsigned long int)ret;
 
 		for (int i = 0; i < ret; ++i) {
 			int c = (int)buffer[i];
@@ -165,23 +180,20 @@ entropy:
 	if (args & ARGS_R)
 		entropy = round(entropy);
 
-	// Definir des options d'output:
-	// 		- Nombre de chiffres après la virgule pour l'entreopy
-
 	if (args & ARGS_A) {
 		printf(
 			"Characters:         %lu\n"
 			"Unique characters:  %lu\n"
 			"Possible passwords: %s%.0f\n",
-			nb_chars, nb_unique_chars, nb_passwords == DBL_MAX ? ">= " : "",
+			nb_chars, nb_unique_chars, nb_passwords == DBL_MAX ? "more than " : "",
 			nb_passwords);
 	}
 	if (!(args & ARGS_E))
 		printf("Entropy:            ");
 	if (args & ARGS_R)
-		printf("%s%.0f\n", nb_passwords == DBL_MAX ? ">= " : "", entropy);
+		printf("%s%.0f\n", nb_passwords == DBL_MAX ? "more than " : "", entropy);
 	else
-		printf("%s%f\n", nb_passwords == DBL_MAX ? ">= " : "", entropy);
+		printf("%s%f\n", nb_passwords == DBL_MAX ? "more than " : "", entropy);
 
 end:
 	exit(EXIT_SUCCESS);

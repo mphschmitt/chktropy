@@ -105,4 +105,9 @@ We could see that as a spacing between the current number and the next, bigger o
 As said, this "spacing" is relative to the size of the number, so the bigger the number gets, the less accurate it becomes. Thus it is acceptable to give an arbitrary high value to the number of possible passwords (and thus to entropy) for really big numbers since this value would be valid for quite a big range of different numbers.
 
 If the number of passwords that can be generated is higher than DBL_MAX, then chktropy considers that the maximum number of passwords is DBL_MAX.
-As indicated by `man 2 float.h`, DBL_MAX is defined as 1E+37 on a x86_64 processor, which is much bigger than any real world password one could generate.
+
+## Why is it acceptable
+
+As indicated by `man 2 float.h`, DBL_MAX is defined as 1E+37 on a x86_64 processor, which is huge.
+For exemple, such a password is stronger than a 169 characters password with 66 unique passwords.
+That is 708 characters of entropy.
