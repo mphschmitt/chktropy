@@ -3,7 +3,7 @@
 Check the entropy of a password
 
 chktropy reads a password on the standard input, calculates its Shannon's entropy, and displays it on the standard output.
-It can also display the uncertainty of the password by displaying the number of characters in the password, the number of unique characters, and the number of passwords that can be generated with thoses characters.
+It can also display the number of characters in the password, the number of unique characters, and the number of passwords that can be generated with thoses characters.
 
 ## Usage
 
@@ -22,9 +22,14 @@ or even
 echo 'mypassword` | chktropy
 ```
 
-This is very handy while generating password to check their strength.
+It is also possible to give a password as an argument:
+```
+chktropy -s mypassword
+```
 
-It can also work on any characters stream, as long as it is 7 bits ASCII.
+This is very handy while generating passwords to check their strength.
+
+It works on 7 bits ASCII strings.
 Otherwise the program stops and an error message is displayed.
 
 # Theory behind chktropy
@@ -39,8 +44,7 @@ This is how it is calculated:
 ```
 
 Entropy is tightly linked to the quality of passwords.
-The higher its entropy, the more impredictable the data is.
-And the stronger are the passwords.
+The higher its entropy, the more impredictable the data is, the stronger the passwords are.
 
 ## Floating point considerations
 
@@ -75,7 +79,7 @@ There are 4 different errors we should watch out for while doing calculations on
 For more informations, check `man 7 math_error`
 
 chktropy is not concerned with underflow of divide by zero errors.
-The only ones we should actually care about are overflow and invalid, which itself results for an overflow.
+The only ones we should actually care about are overflow and invalid, which itself results trom an overflow.
 
 ## Overflow error
 
@@ -98,7 +102,7 @@ The maximum value this relative error can take is called the [machine_epsilon](h
 It is possible to calculate the specific epsilon to add to the current number to 'change' its value.
 We could see that as a spacing between the current number and the next, bigger one.
 
-As said, this "spacing" is relative the size of the number, so the bigger the number gets, the less accurate it becomes. Thus it is acceptable to give an arbitrary high value to the number of possible passwords (and thus to entropy) for really big numbers since this value would be valid for quite a big range of different numbers.
+As said, this "spacing" is relative to the size of the number, so the bigger the number gets, the less accurate it becomes. Thus it is acceptable to give an arbitrary high value to the number of possible passwords (and thus to entropy) for really big numbers since this value would be valid for quite a big range of different numbers.
 
 If the number of passwords that can be generated is higher than DBL_MAX, then chktropy considers that the maximum number of passwords is DBL_MAX.
 As indicated by `man 2 float.h`, DBL_MAX is defined as 1E+37 on a x86_64 processor, which is much bigger than any real world password one could generate.
