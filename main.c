@@ -70,16 +70,25 @@ int main(int argc, char *argv[])
 	};
 
 	// Support arbitrary precision numbers
-	// Add support for long options
 	while ((opt = getopt_long(argc, argv, "aeihr", long_options, NULL)) != -1) {
 		switch (opt) {
 		case 'a':
+			if (args & ARGS_E) {
+				printf("Incompatible options: --all and --entropy\n");
+				usage();
+				exit(EXIT_SUCCESS);
+			}
 			args |= ARGS_A;
 			break;
 		case 'i':
 			args |= ARGS_I;
 			break;
 		case 'e':
+			if (args & ARGS_A) {
+				printf("Incompatible options: --all and --entropy\n");
+				usage();
+				exit(EXIT_SUCCESS);
+			}
 			args |= ARGS_E;
 			args |= ARGS_I;
 			break;
@@ -163,15 +172,16 @@ entropy:
 		printf(
 			"Characters:         %lu\n"
 			"Unique characters:  %lu\n"
-			"Possible passwords: %.0f\n",
-			nb_chars, nb_unique_chars, nb_passwords);
+			"Possible passwords: %s%.0f\n",
+			nb_chars, nb_unique_chars, nb_passwords == DBL_MAX ? ">= " : "",
+			nb_passwords);
 	}
 	if (!(args & ARGS_E))
 		printf("Entropy:            ");
 	if (args & ARGS_R)
-		printf("%.0f\n", entropy);
+		printf("%s%.0f\n", nb_passwords == DBL_MAX ? ">= " : "", entropy);
 	else
-		printf("%f\n", entropy);
+		printf("%s%f\n", nb_passwords == DBL_MAX ? ">= " : "", entropy);
 
 end:
 	exit(EXIT_SUCCESS);
