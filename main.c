@@ -14,7 +14,8 @@ enum arguments {
 	ARGS_A = 0X01, /* Display all informations */
 	ARGS_I = 0x02, /* Do not print input */
 	ARGS_E = 0x04, /* Only print the entropy */
-	ARGS_R = 0x08  /* Round entropy */
+	ARGS_R = 0x08, /* Round entropy */
+	ARGS_S = 0x10  /* Argv input */
 };
 
 static void usage(void)
@@ -27,7 +28,8 @@ static void usage(void)
 		"  -a  --all        display number of chars, unique chars,\n"
 		"                     and the number possible passwords\n"
 		"  -e  --entropy    display the entropy value only\n"
-		"  -r  --round      round the entropy to the closest integer\n");
+		"  -r  --round      round the entropy to the closest integer\n"
+		"  -s  --string     Use the string passed as an argument instead of the stdin\n");
 }
 
 static long double calculate_entropy(
@@ -50,7 +52,7 @@ static long double calculate_entropy(
 	return entropy;
 }
 
-static char check_arguments(int argc, char *argv[])
+static char check_arguments(int argc, char *argv[], char **input_str)
 {
 	char args = 0;
 	int opt;
@@ -60,16 +62,17 @@ static char check_arguments(int argc, char *argv[])
 		{"round", no_argument, 0, 'r'},
 		{"input", no_argument, 0, 'i'},
 		{"entropy", no_argument, 0, 'e'},
+		{"string", required_argument, 0, 's'},
 		{0, 0, 0, 0}
 	};
 
-	while ((opt = getopt_long(argc, argv, "aeihr", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "aeihrs:", long_options, NULL)) != -1) {
 		switch (opt) {
 		case 'a':
 			if (args & ARGS_E) {
 				printf("Incompatible options: --all and --entropy\n");
 				usage();
-				exit(EXIT_SUCCESS);
+				return -EINVAL;
 			}
 			args |= ARGS_A;
 			break;
@@ -80,7 +83,7 @@ static char check_arguments(int argc, char *argv[])
 			if (args & ARGS_A) {
 				printf("Incompatible options: --all and --entropy\n");
 				usage();
-				exit(EXIT_SUCCESS);
+				return -EINVAL;
 			}
 			args |= ARGS_E;
 			args |= ARGS_I;
@@ -88,12 +91,14 @@ static char check_arguments(int argc, char *argv[])
 		case 'r':
 			args |= ARGS_R;
 			break;
+		case 's':
+			args |= ARGS_S;
+			*input_str = strndup(optarg, strlen(optarg));
+			break;
 		case 'h':
-			usage();
-			exit(EXIT_SUCCESS);
 		case '?':
 			usage();
-			exit(EXIT_FAILURE);
+			return -EINVAL;
 		default:
 			break;
 		}
@@ -102,71 +107,116 @@ static char check_arguments(int argc, char *argv[])
 	if (optind < argc) {
 		printf("Invalid argument: %s\n", argv[1]);
 		usage();
-		exit(EXIT_FAILURE);
+		return -EINVAL;
 	}
 
 	return args;
 }
 
-// Definir des options d'output:
-// 		- Nombre de chiffres apres la virgule pour l'entropy
-//
-// Support arbitrary precision numbers with gnu gmp library
-int main(int argc, char *argv[])
+static int buff_count(char *str, size_t length,
+	unsigned long int *nb_unique_chars, unsigned long int *nb_chars, char args)
 {
 	char ascii[ASCII_SIZE] = {0};
+	size_t i;
+
+	for (i = 0; i < length; ++i) {
+		int c = (int)str[i];
+
+		if (c < 0 || c > 127) {
+			printf("Chktropy only supports 7 bits ASCII. This password cannot be handled\n");
+			return -EINVAL;
+		}
+
+		if (str[i] == '\n') {
+			str[i] = '\0';
+
+			*nb_chars -= 1;
+			if (!(args & ARGS_I))
+				printf("%s", str);
+			break;
+		}
+
+		if (!ascii[c]) {
+			ascii[c] = 1;
+			*nb_unique_chars += 1;
+		}
+	}
+
+	return 0;
+}
+
+static int handle_string_arg(char *str, unsigned long int *nb_unique_chars,
+	unsigned long int *nb_chars, char args)
+{
+	size_t length;
+	int res;
+
+	length = strlen(str);
+	res = buff_count(str, length, nb_unique_chars, nb_chars, args);
+	if (res)
+		return -EINVAL;
+
+	if (!(args & ARGS_I))
+		printf("%s", str);
+
+	return 0;
+}
+
+int main(int argc, char *argv[])
+{
 	char buffer[BUF_SIZE] = {0};
 	char args;
+	char *input_str = NULL;
 	unsigned long int nb_unique_chars = 0;
 	unsigned long int nb_chars = 0;
 	long double nb_passwords = 0.0;
 	long double entropy = 0.0;
+	int res;
 
-	args = check_arguments(argc, argv);
+	args = check_arguments(argc, argv, &input_str);
+	if (args < 0)
+		goto end;
 
 	if (!(args & ARGS_I))
 		printf("Input:              ");
 
-	while (1) {
-		ssize_t ret = 0;
-
-		ret = read(STDIN_FILENO, buffer, sizeof(buffer));
-		if (ret == 0) {
-			break;
-		} else if (ret < 0) {
-			printf("%s\n", strerror(errno));
+	if (args & ARGS_S) {
+		if (!input_str) {
+			printf("-s option requires a input string\n");
 			usage();
 			goto end;
 		}
+		nb_chars = strlen(input_str);
+		res = handle_string_arg(input_str, &nb_unique_chars, &nb_chars, args);
+		if (res)
+			goto end;
+	} else {
+		while (1) {
+			ssize_t ret = 0;
 
-		nb_chars += (unsigned long int)ret;
-
-		for (int i = 0; i < ret; ++i) {
-			int c = (int)buffer[i];
-
-			if (c < 0 || c > 127) {
-				printf("Chktropy only supports 7 bits ASCII. This password cannot be handled\n");
-				exit(EXIT_FAILURE);
+			ret = read(STDIN_FILENO, buffer, sizeof(buffer) - 1);
+			if (ret == 0) {
+				break;
+			} else if (ret < 0) {
+				printf("%s\n", strerror(errno));
+				usage();
+				goto end;
 			}
 
-			if (buffer[i] == '\n') {
-				buffer[i] = '\0';
+			nb_chars += (unsigned long int)ret;
 
-				nb_chars -= 1;
-				if (!(args & ARGS_I))
-					printf("%s", buffer);
+			res = buff_count(buffer, (unsigned long int)ret, &nb_unique_chars,
+				&nb_chars, args);
+			if (res)
+				goto end;
+			if (buffer[ret - 1] == '\0' || buffer[ret - 1] == '\n')
 				goto entropy;
-			}
 
-			if (!ascii[c]) {
-				ascii[c] = 1;
-				nb_unique_chars += 1;
-			}
+			if (!(args & ARGS_I))
+				printf("%s", buffer);
+
+			memset(buffer, 0, sizeof(buffer));
 		}
-
-		if (!(args & ARGS_I))
-			printf("%s", buffer);
-		memset(buffer, 0, sizeof(buffer));
 	}
 
 entropy:
@@ -194,5 +244,10 @@ entropy:
 		printf("%s%Lf\n", nb_passwords == LDBL_MAX ? "more than " : "", entropy);
 
 end:
-	exit(EXIT_SUCCESS);
+	if (input_str) {
+		free(input_str);
+		input_str = NULL;
+	}
+
+	return 0;
 }

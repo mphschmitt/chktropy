@@ -12,13 +12,17 @@ FORMAT_FLAGS := -Wformat=2 -Wundef
 OPTIMIZATION_FLAGS := -O3
 FLAGS := ${MATH_FLAGS} ${ERROR_FLAGS} ${FORMAT_FLAGS} ${OPTIMIZATION_FLAGS}
 
+OUTPUT_DIR := out
 PROG_NAME := chktropy
 
 SRC := main.c
 
 chkentropy: ${SRC}
-	${COMPILER} main.c ${FLAGS} -o ${PROG_NAME}
+	@mkdir ${OUTPUT_DIR}
+	@${COMPILER} main.c ${FLAGS} -o ${OUTPUT_DIR}/${PROG_NAME}
 
 # install:
 
-# clean:
+clean:
+	@rm ${OUTPUT_DIR}/${PROG_NAME}
+	@rmdir ${OUTPUT_DIR}
