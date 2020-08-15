@@ -30,22 +30,22 @@ static void usage(void)
 		"  -r  --round      round the entropy to the closest integer\n");
 }
 
-static double calculate_entropy(
+static long double calculate_entropy(
 	unsigned long int nb_unique_chars,
 	unsigned long int nb_chars,
-	double *nb_passwords)
+	long double *nb_passwords)
 {
-	double entropy = 0.0;
+	long double entropy = 0.0;
 
 	/* 0^0 = 1, so nb_passwords will never be 0 */
-	*nb_passwords = pow((double)nb_unique_chars, (double)nb_chars);
+	*nb_passwords = powl((double)nb_unique_chars, (double)nb_chars);
 
 	if (isinf(*nb_passwords))
-		*nb_passwords = DBL_MAX;
+		*nb_passwords = LDBL_MAX;
 
-	entropy = log(*nb_passwords);
+	entropy = logl(*nb_passwords);
 
-	*nb_passwords = round(*nb_passwords);
+	*nb_passwords = roundl(*nb_passwords);
 
 	return entropy;
 }
@@ -111,8 +111,6 @@ static char check_arguments(int argc, char *argv[])
 // Definir des options d'output:
 // 		- Nombre de chiffres apres la virgule pour l'entropy
 //
-// nb_passwords and entropy are long double
-//
 // Support arbitrary precision numbers with gnu gmp library
 int main(int argc, char *argv[])
 {
@@ -121,8 +119,8 @@ int main(int argc, char *argv[])
 	char args;
 	unsigned long int nb_unique_chars = 0;
 	unsigned long int nb_chars = 0;
-	double nb_passwords = 0.0;
-	double entropy = 0.0;
+	long double nb_passwords = 0.0;
+	long double entropy = 0.0;
 
 	args = check_arguments(argc, argv);
 
@@ -178,22 +176,22 @@ entropy:
 
 	entropy = calculate_entropy(nb_unique_chars, nb_chars, &nb_passwords);
 	if (args & ARGS_R)
-		entropy = round(entropy);
+		entropy = roundl(entropy);
 
 	if (args & ARGS_A) {
 		printf(
 			"Characters:         %lu\n"
 			"Unique characters:  %lu\n"
-			"Possible passwords: %s%.0f\n",
-			nb_chars, nb_unique_chars, nb_passwords == DBL_MAX ? "more than " : "",
-			nb_passwords);
+			"Possible passwords: %s%.0Lf\n",
+			nb_chars, nb_unique_chars,
+			nb_passwords == LDBL_MAX ? "more than " : "", nb_passwords);
 	}
 	if (!(args & ARGS_E))
 		printf("Entropy:            ");
 	if (args & ARGS_R)
-		printf("%s%.0f\n", nb_passwords == DBL_MAX ? "more than " : "", entropy);
+		printf("%s%.0Lf\n", nb_passwords == LDBL_MAX ? "more than " : "", entropy);
 	else
-		printf("%s%f\n", nb_passwords == DBL_MAX ? "more than " : "", entropy);
+		printf("%s%Lf\n", nb_passwords == LDBL_MAX ? "more than " : "", entropy);
 
 end:
 	exit(EXIT_SUCCESS);
