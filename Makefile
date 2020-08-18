@@ -18,11 +18,10 @@ PROG_NAME := chktropy
 SRC := main.c
 
 chkentropy: ${SRC}
-	@mkdir ${OUTPUT_DIR}
+	@mkdir -p ${OUTPUT_DIR}
 	@${COMPILER} main.c ${FLAGS} -o ${OUTPUT_DIR}/${PROG_NAME}
 
 # install:
 
 clean:
-	@rm ${OUTPUT_DIR}/${PROG_NAME}
-	@rmdir ${OUTPUT_DIR}
+	@rm -rf ${OUTPUT_DIR}

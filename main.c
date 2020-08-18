@@ -1,3 +1,21 @@
+/*
+    chktropy checks the entropy of a password
+    Copyright (C) 2020  Mathias Schmitt
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -23,13 +41,25 @@ static void usage(void)
 	printf(
 		"Usage: chktropy [OPTIONS]\n"
 		"Calculate the entropy of the ASCII password given on the standard input\n"
-		"  -h  --help       display this help message\n"
+		"  -h  --help       display this help message and exit\n"
 		"  -i  --stdin      do not print stdin while reading it\n"
 		"  -a  --all        display number of chars, unique chars,\n"
 		"                     and the number possible passwords\n"
 		"  -e  --entropy    display the entropy value only\n"
 		"  -r  --round      round the entropy to the closest integer\n"
-		"  -s  --string     Use the string passed as an argument instead of the stdin\n");
+		"  -s  --string     use the string passed as an argument instead of the stdin\n"
+		"  -v  --version    output version information and exit\n");
+}
+
+static void version(void)
+{
+	printf(
+	"cktropy 1.0.0\n"
+	"\n"
+	"Copyright (C) 2020 Mathias Schmitt\n"
+	"License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n"
+    "This is free software, and you are welcome to change and redistribute it\n"
+    "This program comes with ABSOLUTELY NO WARRANTY.\n");
 }
 
 static long double calculate_entropy(
@@ -63,10 +93,11 @@ static char check_arguments(int argc, char *argv[], char **input_str)
 		{"input", no_argument, 0, 'i'},
 		{"entropy", no_argument, 0, 'e'},
 		{"string", required_argument, 0, 's'},
+		{"version", no_argument, 0, 'v'},
 		{0, 0, 0, 0}
 	};
 
-	while ((opt = getopt_long(argc, argv, "aeihrs:", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "aeihrs:v", long_options, NULL)) != -1) {
 		switch (opt) {
 		case 'a':
 			if (args & ARGS_E) {
@@ -95,6 +126,9 @@ static char check_arguments(int argc, char *argv[], char **input_str)
 			args |= ARGS_S;
 			*input_str = strndup(optarg, strlen(optarg));
 			break;
+		case 'v':
+			version();
+			return -EINVAL;
 		case 'h':
 		case '?':
 			usage();
