@@ -1,0 +1,86 @@
+.TH chktropy 1  "August 18, 2020" "version 1.0" "USER COMMANDS"
+.SH NAME
+chktropy \- check the entropy of a password
+.SH SYNOPSIS
+.B chktropy
+[\-hirv] [-a|-e] [\-s input]
+.SH DESCRIPTION
+.B chktropy
+reads a password on the standard input, calculates its Shannon's entropy, and displays it on the standard output.   
+It can also display the number of characters in the password, the number of unique characters, and the number of passwords that can be generated with those characters.
+.PP
+.B chktropy
+is designed to be used in a data pipe, reading a password from the stdin, as the ouput of another program (see
+.B EXAMPLES\fR).
+However, it can also read the password if it is given as an argument.
+By default, the input password will be displayed but this behavior can be turned off (see
+.B OPTIONS\fR).
+.PP
+.B chktropy
+can handle infinite length strings on the stdin, and maximum buffer size strings as an argument, but it can only manipulate numbers up to 1E+37. This means the maximum entropy
+.B chktropy
+can handle is roughly 11327, which is much bigger than you could ever need. Any entropy bigger than that will indicated as "bigger than 11327". If you desire arbitrary precision accuracy, then you probably need a different tool.
+.SH OPTIONS
+.TP
+.B \-h, --help
+display this help message and exit
+.TP
+.B \-i, --stdin
+do not print stdin while reading it
+.TP
+.B \-a, --all
+display the number or characters, unique characters, and the number of possible passwords.
+This option is not compatible with -e
+.TP
+.B \-e, --entropy
+display the entropy value only.
+This option is not compatible with -a
+.TP
+.B \-r, --round
+round the entropy to the closest integer
+.TP
+.B \-s, --string
+use the string passed as an argument as input istead of the stdin.
+.TP
+.B \-v, --version
+output version information and exit
+.SH EXAMPLES
+.TP
+Generate a password and display its informations
+makepasswd -m 75 | 
+.B chktropy
+\-a
+.PP
+.TP
+Generate a password and display its informations
+pwgen -s 30 | 
+.B chktropy
+\-a
+.PP
+.TP
+Give a password and write the rounded entropy to a file
+echo 'mypassword' | 
+.B chktropy
+\-er > file.txt
+.PP
+.TP
+Read a password given as an argument and display its entropy
+.B chktropy
+\-s "mypassword"
+.PP
+.SH EXIT STATUS
+chktropy returns a zero exist status if it succeeds to calculate the entropy of the password. 
+Non zero is returned in case of failure.
+.SH AUTHOR
+Written by
+.B Mathias Schmitt
+.SH SEE ALSO
+makepasswd(1), pwgen(1)
+.SH COPYRIGHT
+.PP
+Copyright (C) 2020  Mathias Schmitt
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.

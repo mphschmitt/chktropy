@@ -205,11 +205,13 @@ int main(int argc, char *argv[])
 	unsigned long int nb_chars = 0;
 	long double nb_passwords = 0.0;
 	long double entropy = 0.0;
-	int res;
+	int res = 0;
 
 	args = check_arguments(argc, argv, &input_str);
-	if (args < 0)
+	if (args < 0) {
+		res = -EINVAL;
 		goto end;
+	}
 
 	if (!(args & ARGS_I))
 		printf("Input:              ");
@@ -283,5 +285,5 @@ end:
 		input_str = NULL;
 	}
 
-	return 0;
+	return res;
 }
