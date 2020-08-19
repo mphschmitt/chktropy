@@ -30,8 +30,13 @@ FLAGS := ${MATH_FLAGS} ${ERROR_FLAGS} ${FORMAT_FLAGS} ${OPTIMIZATION_FLAGS}
 
 OUTPUT_DIR := out
 PROG_NAME := chktropy
-
 SRC := main.c
+
+MAN_DIR := man
+MAN := ${PROG_NAME}.1
+INSTALL_DIR := /usr/local/bin
+INSTALL_MAN_DIR := /usr/local/share/man/man1
+INSTALL_MAN_DIR_FR := /usr/local/share/man/fr/man1
 
 .PHONY: all
 all: chktropy
@@ -41,8 +46,27 @@ chktropy: ${SRC}
 	@mkdir -p ${OUTPUT_DIR}
 	@${COMPILER} main.c ${FLAGS} -o ${OUTPUT_DIR}/${PROG_NAME}
 
-# .PHONY: install
-# install:
+.PHONY: install
+install: ${OUTPUT_DIR}/${PROG_NAME} install_man
+	@mkdir -p ${DESTDIR}${INSTALL_DIR}
+	@cp $< ${DESTDIR}${INSTALL_DIR}/${PROG_NAME}
+
+.PHONY: uninstall
+uninstall: uninstall_man
+	@rm ${DESTDIR}${INSTALL_DIR}/${PROG_NAME}
+
+.PHONY: install_man
+install_man:
+	@mkdir -p ${DESTDIR}${INSTALL_MAN_DIR}
+	@cp ${MAN_DIR}/${MAN} ${DESTDIR}${INSTALL_MAN_DIR}/${MAN}
+
+	@mkdir -p ${DESTDIR}${INSTALL_MAN_DIR_FR}
+	@cp ${MAN_DIR}/fr/${MAN} ${DESTDIR}${INSTALL_MAN_DIR_FR}/${MAN}
+
+.PHONY: uninstall_man
+uninstall_man:
+	rm ${DESTDIR}${INSTALL_MAN_DIR}/${MAN}
+	rm ${DESTDIR}${INSTALL_MAN_DIR_FR}/${MAN}
 
 .PHONY: clean
 clean:

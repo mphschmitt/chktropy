@@ -1,3 +1,18 @@
+#Table of Contents
+
+- [About the project](#chktropy)
+	- [Build and install](#build-and-install)
+	- [Usage](#usage)
+	- [Input](#input)
+- [Theory behind chktropy](#theory-behind-chktropy)
+	- [Shannon's entropy](#shannons-entropy)
+	- [Floating point considerations](#floating-point-considerations)
+		- [Floating point errors](#floating-point-errors)
+		- [Overflow](#overflow-error)
+		- [Approximations](#approximations)
+- [License](#license)
+- [Contact](#contact)
+
 # chktropy
 
 Check the entropy of a password
@@ -5,32 +20,84 @@ Check the entropy of a password
 chktropy reads a password on the standard input, calculates its Shannon's entropy, and displays it on the standard output.   
 It can also display the number of characters in the password, the number of unique characters, and the number of passwords that can be generated with those characters.
 
+# Build and Install
+
+Build the project:
+
+```
+make
+```
+
+Install chktropy:
+
+```
+sudo make install
+```
+
+By default, chktropy is installed in `/usr/local/bin`
+
+Uninstall:
+
+```
+sudo make uninstall
+```
+
+A manual is also installed both in english and french in `/usr/local/share/man`. It can be consulted with the following command:
+
+```
+man chktropy
+```
+
 ## Usage
+
 
 chktropy was designed for a quick usage in a data pipe.
 
 The classical usage of chktropy is the following:
+
 ```
-makepasswd -m 75 | chktropy -a
+$ makepasswd -m 75 | chktropy -a
+Input:              B0hB=(NGIj^@N~nP_VocLF4TdPnZcT*6V27UxW2H
+Characters:         40
+Unique characters:  32
+Possible passwords: 1606938044258990275541962092341162602522202993782792835301376
+Entropy:            138.629436
 ```
-or   
+We can also write the rounded entropy to a file
+
 ```
-pwgen -s1 30
-```
-or even   
-```
-echo 'mypassword` | chktropy
+$ pwgen -s1 30 | chktropy -er > file.txt
+$ ls
+file.txt
+$ cat file.txt
+98
 ```
 
 It is also possible to give a password as an argument:
+
 ```
-chktropy -s mypassword
+$ chktropy -s mypassword
+Input:              mypassword
+Entropy:            21.972246
 ```
 
 This is very handy while generating passwords to check their strength.
 
-It works on 7 bits ASCII strings.   
+To obtain help, you can type:
+
+```
+chktropy --help
+```
+
+## Input
+
+Since real-world passwords use only 7 bits ASCII, chktropy only accepts  7 bits ASCII strings as an input.   
 Otherwise the program stops and an error message is displayed.
+
+No other check is done on the given string, since the set of characters accepted varies from one website to another.
+
+Some only accept digits, other allow no special characters, and others have very few restrictions.    
+It is up to you to make sure the password is accepted by the website you wish to use it on. It is not the job of chktropy.
 
 # Theory behind chktropy
 
@@ -83,7 +150,7 @@ For more informations, check `man 7 math_error`
 chktropy is not concerned with underflow of divide by zero errors.   
 The only ones we should actually care about are overflow and invalid, which itself results trom an overflow.
 
-## Overflow error
+### Overflow error
 
 While calculating Shannon's entropy in the above code, there is the risk that nb_passwords overflows the maximum possible value for a long double.     
 If this were to happen, then the entropy would be infinite.
@@ -92,7 +159,7 @@ All math.h functions accept inf as a valid value, and it propagates through all 
 
 However, an infinite entropy is only possible for an infinite password, so returning this value is just wrong.
 
-## Approximations
+### Approximations
 
 Since floating points numbers use a finite amount of memory, they actually are approximations of the real value. The bigger the number, the bigger the approximation.
 That means that the approximation error is relative to the number.
@@ -118,3 +185,12 @@ For reference, a human generated password has an average entropy of ~33 characte
 It is very unlikely that anyone would use such a big password.   
 It is even more unlikely that any service would allow anyone to use such a password.   
 For this reasons, chktropy does not use arbitrary precision floating point numbers, even though it as been considered to use gnu gmp library.
+
+# License
+
+Distributed under GPL License. See `COPYING` for more information.
+
+# Contact
+
+Mathias Schmitt - mathiaspeterhorst@gmail.com
+Project link: https://github.com/mphschmitt/chktropy

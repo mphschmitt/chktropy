@@ -20,6 +20,9 @@ Par defaut, le mot de passe donne en entree sera affiche au fur et a mesure de l
 peut gerer des chaines de caracteres de taille infinie si elles proviennent du stdin, ou de taille maximale permise pour un argument si elles sont donnees en arguments. Cepandant, il ne peut manipuler des nombre que jusqu'a 1E+37. Cela signifie que l'entropie maximale que
 .B chktropy
 peut calculer est environ de 11327, ce qui est de toutes facons bien plus grand que l'entropie de tout mot de passe destine a un usage reel. Toute entropie plus grande que ce seuil sera indiquee comme "bigger than 11327". Si vous souhaitez une precision arbitraire, alors vous aurez surement besoin d'un autre outil.
+.PP
+.B chktropy
+accepte uniquement des mots de passe encodes en ascii 7 bits. Tout mot de passe utilisant un jeu de caracteres different sera considere invalide, et le programme s'arretera. 
 .SH OPTIONS
 .TP
 .B \-h, --help

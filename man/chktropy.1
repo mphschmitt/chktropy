@@ -20,6 +20,9 @@ By default, the input password will be displayed but this behavior can be turned
 can handle infinite length strings on the stdin, and maximum buffer size strings as an argument, but it can only manipulate numbers up to 1E+37. This means the maximum entropy
 .B chktropy
 can handle is roughly 11327, which is much bigger than you could ever need. Any entropy bigger than that will be indicated as "bigger than 11327". If you desire arbitrary precision accuracy, then you probably need a different tool.
+.PP
+.B chktropy
+only accepts 7 bits ascii passwords as an input. Every password using a different character set will be considered invalid and the program will stop.
 .SH OPTIONS
 .TP
 .B \-h, --help
