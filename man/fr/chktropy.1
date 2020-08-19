@@ -1,0 +1,86 @@
+.TH chktropy 1  "Aout 18, 2020" "version 1.0" "USER COMMANDS"
+.SH NOM
+chktropy \- calcul l'entropie d'un mot de passe
+.SH SYNOPSIS
+.B chktropy
+[\-hirv] [-a|-e] [\-s input]
+.SH DESCRIPTION
+.B chktropy
+lit un mot de passe sur l'entree standard, calcul son entropie de Shannon, et l'affiche sur la sortie standard.   
+Il peut aussi afficher le nombre de caracteres dans le mot de passe, le nombre de caracteres uniques, et le nombre de mots de passe qu'il est possible de generer a partir de ces caracteres.
+.PP
+.B chktropy
+lit un mot de passe depuis l'entree standard, (voir
+.B EXEMPLES\fR).
+Cepandant, il peut aussi lire un mot de passe donne en tant qu'argument.
+Par defaut, le mot de passe donne en entree sera affiche au fur et a mesure de la lecture, mais ce comportement peut etre desactive (voir
+.B OPTIONS\fR).
+.PP
+.B chktropy
+peut gerer des chaines de caracteres de taille infinie si elles proviennent du stdin, ou de taille maximale permise pour un argument si elles sont donnees en arguments. Cepandant, il ne peut manipuler des nombre que jusqu'a 1E+37. Cela signifie que l'entropie maximale que
+.B chktropy
+peut calculer est environ de 11327, ce qui est de toutes facons bien plus grand que l'entropie de tout mot de passe destine a un usage reel. Toute entropie plus grande que ce seuil sera indiquee comme "bigger than 11327". Si vous souhaitez une precision arbitraire, alors vous aurez surement besoin d'un autre outil.
+.SH OPTIONS
+.TP
+.B \-h, --help
+affiche ce message d'aide et quitte
+.TP
+.B \-i, --silent
+n'affiche pas l'input lors de sa lecture
+.TP
+.B \-a, --all
+affiche le nombre de caracteres, de caracteres unique et le nombre maximal de mots de passe pouvant etre generes avec ces caracteres.
+Cette option est incompatible avec -e
+.TP
+.B \-e, --entropy
+affiche uniquement la valeur de l'entropie.
+Cette option est incompatible avec -a
+.TP
+.B \-r, --round
+arrondi l'entropie a l'entier le plus proche
+.TP
+.B \-s, --string
+utilise la chaine de caracteres passee en argument plutot que de lire le stdin
+.TP
+.B \-v, --version
+affiche la version et d'autres informations puis quitte
+.SH EXAMPLES
+.TP
+Genere un mot de passe et affiche ses informations
+makepasswd -m 75 | 
+.B chktropy
+\-a
+.PP
+.TP
+Genere un mot de passe et affiche ses informations
+pwgen -s 30 | 
+.B chktropy
+\-a
+.PP
+.TP
+Donne un mot de passe et ecrit l'entropie arrondie dans un fichier
+echo 'mypassword' | 
+.B chktropy
+\-er > file.txt
+.PP
+.TP
+Prends un mot de passe en argument et affiche son entropie
+.B chktropy
+\-s "mypassword"
+.PP
+.SH CODE D'ETAT
+chktropy retourne zero s'il a pu calculer l'entropie avec succes.
+Une valeur differente de zero est retournee en cas d'echec.
+.SH AUTEUR
+Ecrit par
+.B Mathias Schmitt
+.SH VOIR AUSSI
+makepasswd(1), pwgen(1)
+.SH COPYRIGHT
+.PP
+Copyright (C) 2020  Mathias Schmitt
+
+Ce programme est un logiciel libre; vous pouvez le redistribuer et/ou le
+modifier selon les termes de la licence GNU General Public License comme
+publiee par la Free Software Foundation, soit la version 3 de ladite licence,
+ou (a votre convenance) n'importe quelle version suivante.

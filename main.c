@@ -42,7 +42,7 @@ static void usage(void)
 		"Usage: chktropy [OPTIONS]\n"
 		"Calculate the entropy of the ASCII password given on the standard input\n"
 		"  -h  --help       display this help message and exit\n"
-		"  -i  --stdin      do not print stdin while reading it\n"
+		"  -i  --silent     do not print input while reading it\n"
 		"  -a  --all        display number of chars, unique chars,\n"
 		"                     and the number possible passwords\n"
 		"  -e  --entropy    display the entropy value only\n"
