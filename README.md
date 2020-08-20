@@ -1,4 +1,4 @@
-#Table of Contents
+# Table of Contents
 
 - [About the project](#chktropy)
 	- [Build and install](#build-and-install)
@@ -96,7 +96,7 @@ Otherwise the program stops and an error message is displayed.
 
 No other check is done on the given string, since the set of characters accepted varies from one website to another.
 
-Some only accept digits, other allow no special characters, and others have very few restrictions.    
+Some only accept digits, others allow no special characters, and others have very few restrictions.    
 It is up to you to make sure the password is accepted by the website you wish to use it on. It is not the job of chktropy.
 
 # Theory behind chktropy
@@ -142,7 +142,7 @@ There are 4 different errors we should watch out for while doing calculations on
 
 	- divide by zero
 	- overflow: the number is larger than the largest possible number of the data type
-	- undeflow: the number is smaller than the smallest possible number of the data type
+	- underflow: the number is smaller than the smallest possible number of the data type
 	- invalid: no result for an operation (inf - inf for exemple)
 
 For more informations, check `man 7 math_error`
@@ -184,7 +184,7 @@ For reference, a human generated password has an average entropy of ~33 characte
 
 It is very unlikely that anyone would use such a big password.   
 It is even more unlikely that any service would allow anyone to use such a password.   
-For this reasons, chktropy does not use arbitrary precision floating point numbers, even though it as been considered to use gnu gmp library.
+For this reasons, chktropy does not use arbitrary precision floating point numbers, even though it has been considered to use gnu gmp library.
 
 # License
 
@@ -192,5 +192,5 @@ Distributed under GPL License. See `COPYING` for more information.
 
 # Contact
 
-Mathias Schmitt - mathiaspeterhorst@gmail.com
+Mathias Schmitt - mathiaspeterhorst@gmail.com     
 Project link: https://github.com/mphschmitt/chktropy
